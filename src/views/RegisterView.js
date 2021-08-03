@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 import { authOperations } from '../redux/auth';
 
 import Container from '../components/Container'
@@ -15,34 +15,41 @@ const styles = {
   },
 };
 
-class RegisterView extends Component {
-  state = {
-    name: '',
-    email: '',
-    password: '',
-  };
+export default function RegisterView () {
+  const dispatch = useDispatch();
 
-  handleChange = ({ target: { name, value } }) => {
-    this.setState({ [name]: value });
-  };
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  handleSubmit = e => {
-    e.preventDefault();
+  const handleChange = useCallback(e => {
+    const { name, value } = e.target;
+    switch (name) {
+      case 'name':
+        return setName(value);
+      case 'email':
+        return setEmail(value);
+      case 'password':
+        return setPassword(value);
+      default:
+        console.warn(`Tipe of fieldname ${name} is not valid`);
+    };
+  }, [])
 
-    this.props.onRegister(this.state);
+ const handleSubmit = useCallback(e => {
+   e.preventDefault();
+   dispatch(authOperations.register({ name, email, password }));
+   setName('');
+   setEmail('');
+   setPassword('');
+ }, [dispatch, name, email, password]);
 
-    this.setState({ name: '', email: '', password: '' });
-  };
-
-  render() {
-    const { name, email, password } = this.state;
-
-    return (
+ return (
       <Container>
         <h1>Registration</h1>
 
         <form
-          onSubmit={this.handleSubmit}
+          onSubmit={handleSubmit}
           style={styles.form}
           autoComplete="off"
         >
@@ -52,7 +59,7 @@ class RegisterView extends Component {
               type="text"
               name="name"
               value={name}
-              onChange={this.handleChange}
+              onChange={handleChange}
             />
           </label>
 
@@ -62,7 +69,7 @@ class RegisterView extends Component {
               type="email"
               name="email"
               value={email}
-              onChange={this.handleChange}
+              onChange={handleChange}
             />
           </label>
 
@@ -72,7 +79,7 @@ class RegisterView extends Component {
               type="password"
               name="password"
               value={password}
-              onChange={this.handleChange}
+              onChange={handleChange}
             />
           </label>
 
@@ -80,11 +87,4 @@ class RegisterView extends Component {
         </form>
       </Container>
     );
-  }
-}
-
-const mapDispatchToProps = {
-  onRegister: authOperations.register,
 };
-
-export default connect(null, mapDispatchToProps)(RegisterView);

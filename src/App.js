@@ -1,6 +1,6 @@
-import React, {  Component, Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { Switch } from 'react-router-dom';
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -16,13 +16,16 @@ const RegisterView = lazy(() => import('./views/RegisterView'));
 const LoginView = lazy(() => import('./views/LoginView'));
 const ContactsView = lazy(() => import('./views/ContactsView'));
 
-class App extends Component {
-  componentDidMount() {
-    this.props.onGetCurrentUser();    
-  }
 
-  render() {
-    return (
+export default function App() {
+  const dispatch = useDispatch()
+  useEffect(() => {
+    dispatch(authOperations.getCurrentUser())
+  }, [dispatch])
+
+
+
+  return (
       <>
         <AppBar />
 
@@ -53,10 +56,3 @@ class App extends Component {
       </>
     );
   }
-}
-
-const mapDispatchToProps = {
-  onGetCurrentUser: authOperations.getCurrentUser,
-};
-
-export default connect(null, mapDispatchToProps)(App);

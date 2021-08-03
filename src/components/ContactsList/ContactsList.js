@@ -1,12 +1,16 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styles from './ContactsList.module.css';
 
 import ContactsListItm from './ContactsListItm'
 import phonebookOperations from '../../redux/phonebook/phonebook-operations';
 import phonebookSelectors from '../../redux/phonebook/phonebook-selectors'
 
-const ContactsList = ({ contacts, onDeleteContact }) => {
+export default function ContactsList() {
+    const dispatch = useDispatch();
+    
+    const contacts = useSelector(phonebookSelectors.getFilteredContacts);
+
     return (
         <>
             {contacts.length ?
@@ -16,7 +20,7 @@ const ContactsList = ({ contacts, onDeleteContact }) => {
                     key={id}
                     name={name}
                     number={number}
-                    onClickHendler={()=>onDeleteContact(id)}
+                    onClickHendler={()=>dispatch(phonebookOperations.deleteContact(id))}
                 />             
             ))
             }
@@ -26,14 +30,3 @@ const ContactsList = ({ contacts, onDeleteContact }) => {
       </>  
     )
 };
-
-
-const mapStateToProps = state => ({
-contacts: phonebookSelectors.getFilteredContacts(state)
-});
-
-const mapDispatchToProps = dispatch => ({
-onDeleteContact: id => dispatch(phonebookOperations.deleteContact(id))
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(ContactsList);
