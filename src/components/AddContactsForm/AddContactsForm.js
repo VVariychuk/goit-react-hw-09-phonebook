@@ -1,85 +1,82 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import { useState, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import phonebookOperations from '../../redux/phonebook/phonebook-operations';
 import phonebookSelectors from "../../redux/phonebook/phonebook-selectors";
 
 import styles from './AddContactsForm.module.css'
 
-class AddContactsForm extends Component {
+export default function AddContactsForm() {
+  const dispatch = useDispatch();
+  const contacts = useSelector(phonebookSelectors.getAllContacts)
+
+  const [name, setName] = useState('');
+  const [number, setNumber] = useState('');
  
-    state = {
-        name: '',
-        number:''
+    
+
+  const handleChange = useCallback( e => {
+    const { name, value } = e.target;
+    switch (name) {
+      case 'name':
+        return setName(value);
+      case 'number':
+        return setNumber(value);
+      default:
+        console.warn(`Tipe of fieldname ${name} is not valid`);
     };
+  }, []);
 
-    handleChange = e => {
-        this.setState({ [e.currentTarget.name]: e.currentTarget.value });
-    };
+  const handleSubmit = useCallback( e => {
+    e.preventDefault();
 
-    handleSubmit = e => {
-        e.preventDefault(); 
-        const { contacts } = this.props
-        const { name } = this.state
-        this.checkUniq(contacts, name);
-        this.setState({ name: '', number:'' });
-    };
+    if (contacts.some((i) => i.name.toLowerCase() === name.toLowerCase())) {
+        return alert(`${name} is already in contacts`);
+      } else {
+        dispatch(phonebookOperations.addContact( name, number ));
 
-    checkUniq = (contacts, name) => {
-    const { onSubmit } = this.props
-        return contacts.some((i) => i.name === name)
-            ? alert(`${name} is already in contacts`)
-            : onSubmit(this.state.name, this.state.number)
-  }
+        setName('');
+        setNumber('');
+      }
 
-    render() {
-        return (
-            <form onSubmit={this.handleSubmit}
-                className={styles.form}
-            >
-              <label>
-                    Name
-                <input
-                        className={styles.input}
-                  value={ this.state.name}
-                  onChange={this.handleChange}
-                  type="text"
-                  name="name"
-                  pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-                  title="Имя может состоять только из букв, апострофа, тире и пробелов. Например Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan и т. п."
-                  required
-                />
-              </label>              
-              <label>
-                    Number
-                <input
-                  value={ this.state.number}
-                  onChange={this.handleChange}
-                  type="tel"
-                  name="number"
-                  pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
-                  title="Номер телефона должен состоять цифр и может содержать пробелы, тире, круглые скобки и может начинаться с +"
-                  required
-                />
-                </label>
-                <button
-                    type="submit"
-                    className={styles.btnAdd}
-                >
-                Add contact
-                </button>
-           </form>  
-        )
-    }
+  }, [dispatch, name, number, contacts]);
+
+
+  return (
+    <form onSubmit={handleSubmit}
+      className={styles.form}
+    >
+      <label>
+        Name
+        <input
+          className={styles.input}
+          value={name}
+          onChange={handleChange}
+          type="text"
+          name="name"
+          pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
+          title="Имя может состоять только из букв, апострофа, тире и пробелов. Например Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan и т. п."
+          required
+        />
+      </label>
+      <label>
+        Number
+        <input
+          value={number}
+          onChange={handleChange}
+          type="tel"
+          name="number"
+          pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
+          title="Номер телефона должен состоять цифр и может содержать пробелы, тире, круглые скобки и может начинаться с +"
+          required
+        />
+      </label>
+      <button
+        type="submit"
+        className={styles.btnAdd}
+      >
+        Add contact
+      </button>
+    </form>
+  );
 };
-
-const mapStateToProps = (state) => ({
-  contacts: phonebookSelectors.getAllContacts(state),
-})
-
-const mapDispatchToProps = dispatch => ({
-  onSubmit: (name, number)=> dispatch(phonebookOperations.addContact(name, number))
-});
-
-
-export default connect(mapStateToProps, mapDispatchToProps)(AddContactsForm);

@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector} from 'react-redux';
 
 import phonebookOperations from '../redux/phonebook/phonebook-operations';
 import phonebookSelectors from '../redux/phonebook/phonebook-selectors';
@@ -10,14 +10,14 @@ import AddContactsForm from '../components/AddContactsForm';
 import Filter from '../components/Filter';
 import ContactList from '../components/ContactsList';
 
-class ContactsView extends Component { 
+export default function ContactsView () { 
+  const dispatch = useDispatch();
+  const isLoadingContacts = useSelector(phonebookSelectors.getLoading)
 
-  componentDidMount() {
-    this.props.fetchContacts();
-  };
-
-  render() {
-    const {isLoadingContacts, contacts} = this.props
+  useEffect(() => {
+    dispatch(phonebookOperations.fetchContacts())
+  }, [dispatch]);
+  
     return (
       <Container >
         <Section
@@ -43,16 +43,3 @@ class ContactsView extends Component {
       </Container>
     );
   };
-};
-
-const mapStateToProps = state => ({
-  contacts: phonebookSelectors.getFilteredContacts(state),
-  isLoadingContacts: phonebookSelectors.getLoading(state)
-});
-
-const mapDispatchToProps = dispatch => ({
- fetchContacts: () => dispatch(phonebookOperations.fetchContacts())
-});
-
-
-export default connect (mapStateToProps, mapDispatchToProps)(ContactsView);
